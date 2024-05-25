@@ -1,3 +1,4 @@
+
 version: '3.8'
 services:
   rife-ai:
@@ -5,11 +6,11 @@ services:
     container_name: rife_ai
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-      - RUN_RIFE=${RUN_RIFE:-true}
+      - RUN_RIFE=true
     volumes:
-      - '${RIFE_INPUT_VOLUME}'
-      - '${RIFE_OUTPUT_VOLUME}'
-      - './scripts:/scripts'
+      - ./video/source:/video/source
+      - ./video/intermediate_1:/video/result
+      - ./scripts:/scripts
     command: bash /scripts/rife.sh
     tty: true
     stdin_open: true
@@ -20,11 +21,11 @@ services:
     container_name: deoldify
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-      - RUN_DEOLDIFY=${RUN_DEOLDIFY:-true}
+      - RUN_DEOLDIFY=false
     volumes:
-      - '${DEOLDIFY_INPUT_VOLUME}'
-      - '${DEOLDIFY_OUTPUT_VOLUME}'
-      - './scripts:/scripts'
+      - ./video/intermediate_1:/video/source
+      - ./video/intermediate_2:/video/result
+      - ./scripts:/scripts
     command: bash /scripts/deoldify.sh
     tty: true
     stdin_open: true
@@ -35,26 +36,26 @@ services:
     container_name: neural_style
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-      - RUN_NEURAL_STYLE=${RUN_NEURAL_STYLE:-true}
+      - RUN_NEURAL_STYLE=false
     volumes:
-      - '${NEURAL_STYLE_INPUT_VOLUME}'
-      - '${NEURAL_STYLE_OUTPUT_VOLUME}'
-      - './scripts:/scripts'
+      - ./video/intermediate_1:/video/source
+      - ./video/intermediate_3:/video/result
+      - ./scripts:/scripts
     command: bash /scripts/neural_style.sh
     tty: true
     stdin_open: true
     restart: no
 
   esrgan:
-    image: real-esrgan
+    image: esrgan
     container_name: esrgan
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-      - RUN_ESRGAN=${RUN_ESRGAN:-true}
+      - RUN_ESRGAN=false
     volumes:
-      - '${ESRGAN_INPUT_VOLUME}'
-      - '${ESRGAN_OUTPUT_VOLUME}'
-      - './scripts:/scripts'
+      - ./video/intermediate_1:/video/source
+      - ./video/result:/video/results
+      - ./scripts:/scripts
     command: bash /scripts/esrgan.sh
     tty: true
     stdin_open: true
