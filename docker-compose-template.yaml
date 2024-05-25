@@ -1,0 +1,61 @@
+version: '3.8'
+services:
+  rife-ai:
+    image: rife-container
+    container_name: rife_ai
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - RUN_RIFE=${RUN_RIFE:-true}
+    volumes:
+      - ${RIFE_INPUT_VOLUME}
+      - ${RIFE_OUTPUT_VOLUME}
+    command: bash /scripts/rife.sh
+    tty: true
+    stdin_open: true
+    restart: no
+
+  deoldify:
+    image: your_deoldify_image
+    container_name: deoldify
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - RUN_DEOLDIFY=${RUN_DEOLDIFY:-true}
+    volumes:
+      - ${DEOLDIFY_INPUT_VOLUME}
+      - ${DEOLDIFY_OUTPUT_VOLUME}
+    command: bash /scripts/deoldify.sh
+    tty: true
+    stdin_open: true
+    restart: no
+  
+  neural_style:
+    image: your_deoldify_image
+    container_name: deoldify
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - RUN_DEOLDIFY=${RUN_DEOLDIFY:-true}
+    volumes:
+      - ${NEURAL_STYLE_INPUT_VOLUME}
+      - ${NEURAL_STYLE_OUTPUT_VOLUME}
+    command: bash /scripts/deoldify.sh
+    tty: true
+    stdin_open: true
+    restart: no
+
+  esrgan:
+    image: your_esrgan_image
+    container_name: esrgan
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - RUN_ESRGAN=${RUN_ESRGAN:-true}
+    volumes:
+      - ${ESRGAN_INPUT_VOLUME}
+      - ${ESRGAN_OUTPUT_VOLUME}
+    command: bash /scripts/esrgan.sh
+    tty: true
+    stdin_open: true
+    restart: no
