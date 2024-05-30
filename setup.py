@@ -102,20 +102,20 @@ def create_docker_compose(config):
 
     volumes = {
         'rife': ['./video/source:/video/source', './video/intermediate_1:/video/result'],
-        'deoldify': ['./video/intermediate_1:/video/source', './video/intermediate_2:/video/result'],
-        'neural_style': ['./video/intermediate_2:/video/source', './video/intermediate_3:/video/result'],
-        'esrgan': ['./video/intermediate_3:/video/source', './video/result:/video/results']
+        'deoldify': ['./video/intermediate_1:/deoldify/video/source', './video/intermediate_2:/deoldify/video/result'],
+        'neural_style': ['./video/intermediate_2:/neural_style/video/source', './video/intermediate_3:/neural_style/video/result'],
+        'esrgan': ['./video/intermediate_3:/video/source', './video/result:/real-esrgan/results']
     }
 
     # Adjust volumes based on which services are enabled
     if not config['rife']:
-        volumes['deoldify'][0] = './video/source:/video/source'
+        volumes['deoldify'][0] = './video/source:/deoldify/video/source'
 
     if not config['deoldify']:
         if not config['rife']:
-            volumes['neural_style'][0] = './video/source:/video/source'
+            volumes['neural_style'][0] = './video/source:/neural_style/video/source'
         else:
-            volumes['neural_style'][0] = './video/intermediate_1:/video/source'
+            volumes['neural_style'][0] = './video/intermediate_1:/neural_style/video/source'
 
     if not config['neural_style']:
         if not config['deoldify'] and not config['rife']:
@@ -202,7 +202,7 @@ def create_docker_compose(config):
         esrgan_service = create_service(
             EsrganService,
             {
-                'image': 'esrgan',
+                'image': 'real-esrgan',
                 'container_name': 'esrgan',
                 'command': f'python inference_realesrgan_video.py -i /video/source/video.mp4 -n RealESRGAN_x4plus --outscale {config["ESRGAN_OUTSCALE"]}'
             },

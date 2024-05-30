@@ -2,9 +2,9 @@
 
 rife: true
 deoldify: true
-neural_style: true
+neural_style: false
 esrgan: true
 
 ESRGAN_OUTSCALE: 4.0
-NEURAL_MODEL: 'default_model'
+NEURAL_MODEL: 'candy.pth' # Other options are mosaic.pth, rain_princess.pth and udnie.pth
 NVIDIA_VISIBLE_DEVICES: 'all'
