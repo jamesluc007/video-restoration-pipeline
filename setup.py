@@ -4,6 +4,9 @@ from typing import List
 
 @dataclass
 class DockerService:
+    """
+    Base class representing a Docker service.
+    """
     image: str
     container_name: str
     environment: List[str] = field(default_factory=list)
@@ -15,25 +18,52 @@ class DockerService:
 
 @dataclass
 class RifeService(DockerService):
+    """
+    Class representing the Rife AI service.
+    """
     pass
 
 @dataclass
 class DeoldifyService(DockerService):
+    """
+    Class representing the Deoldify service.
+    """
     pass
 
 @dataclass
 class NeuralStyleService(DockerService):
+    """
+    Class representing the Neural Style Transfer service.
+    """
     pass
 
 @dataclass
 class EsrganService(DockerService):
+    """
+    Class representing the ESRGAN service.
+    """
     pass
 
 def load_config(file_path: str):
+    """
+    Load configuration from a YAML file.
+
+    :param file_path: Path to the YAML configuration file.
+    :return: Parsed configuration dictionary.
+    """
     with open(file_path, 'r') as file:
         return yaml.safe_load(file)
 
 def create_service(service_class, config, common_env, volumes):
+    """
+    Create a Docker service instance.
+
+    :param service_class: The class of the Docker service.
+    :param config: Dictionary containing service configuration.
+    :param common_env: List of common environment variables.
+    :param volumes: List of volumes to mount.
+    :return: An instance of the Docker service.
+    """
     service = service_class(
         image=config['image'],
         container_name=config['container_name'],
@@ -44,6 +74,12 @@ def create_service(service_class, config, common_env, volumes):
     return service
 
 def create_docker_compose(config):
+    """
+    Create the Docker Compose services based on the configuration.
+
+    :param config: Configuration dictionary.
+    :return: List of Docker service instances.
+    """
     services = []
 
     common_env = []
@@ -57,6 +93,7 @@ def create_docker_compose(config):
         'esrgan': ['./video/intermediate_3:/video/source', './video/result:/video/results']
     }
 
+    # Adjust volumes based on which services are enabled
     if not config['rife']:
         volumes['deoldify'][0] = './video/source:/video/source'
 
@@ -74,6 +111,7 @@ def create_docker_compose(config):
         else:
             volumes['esrgan'][0] = './video/intermediate_2:/video/source'
 
+    # Create services in the specified order
     if config['rife']:
         rife_service = create_service(
             RifeService,
@@ -129,6 +167,12 @@ def create_docker_compose(config):
     return services
 
 def generate_docker_compose_yml(services, output_file='docker-compose.yml'):
+    """
+    Generate the Docker Compose YAML file.
+
+    :param services: List of Docker service instances.
+    :param output_file: Path to the output Docker Compose YAML file.
+    """
     compose_dict = {
         'version': '3.8',
         'services': {}
@@ -150,6 +194,8 @@ def generate_docker_compose_yml(services, output_file='docker-compose.yml'):
         yaml.dump(compose_dict, file)
 
 if __name__ == "__main__":
+    # Load configuration and create Docker Compose services
     config = load_config('config.yml')
     services = create_docker_compose(config)
+    # Generate the Docker Compose YAML file
     generate_docker_compose_yml(services)

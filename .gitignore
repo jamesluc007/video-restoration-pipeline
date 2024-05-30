@@ -1,2 +1,4 @@
 # Ignore specific files
 docker-compose.yml
+# Ignore node_modules directory
+video/
