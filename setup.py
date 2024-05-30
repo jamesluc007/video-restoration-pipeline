@@ -15,6 +15,17 @@ class DockerService:
     tty: bool = True
     stdin_open: bool = True
     restart: str = "no"
+    deploy: dict = field(default_factory=lambda: {
+        'resources': {
+            'reservations': {
+                'devices': [{
+                    'driver': 'nvidia',
+                    'count': 'all',
+                    'capabilities': ['gpu']
+                }]
+            }
+        }
+    })
 
 @dataclass
 class RifeService(DockerService):
@@ -186,7 +197,8 @@ def generate_docker_compose_yml(services, output_file='docker-compose.yml'):
             'command': service.command,
             'tty': service.tty,
             'stdin_open': service.stdin_open,
-            'restart': service.restart
+            'restart': service.restart,
+            'deploy': service.deploy
         }
         compose_dict['services'][service.container_name] = service_dict
 
