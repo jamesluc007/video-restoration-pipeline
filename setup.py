@@ -26,6 +26,7 @@ class DockerService:
             }
         }
     })
+    depends_on: dict = field(default_factory=dict)
 
 @dataclass
 class RifeService(DockerService):
@@ -65,7 +66,7 @@ def load_config(file_path: str):
     with open(file_path, 'r') as file:
         return yaml.safe_load(file)
 
-def create_service(service_class, config, common_env, volumes):
+def create_service(service_class, config, common_env, volumes, depends_on):
     """
     Create a Docker service instance.
 
@@ -73,6 +74,7 @@ def create_service(service_class, config, common_env, volumes):
     :param config: Dictionary containing service configuration.
     :param common_env: List of common environment variables.
     :param volumes: List of volumes to mount.
+    :param depends_on: Dictionary containing service dependencies.
     :return: An instance of the Docker service.
     """
     service = service_class(
@@ -80,7 +82,8 @@ def create_service(service_class, config, common_env, volumes):
         container_name=config['container_name'],
         environment=common_env + config.get('environment', []),
         volumes=volumes,
-        command=config['command']
+        command=config['command'],
+        depends_on=depends_on
     )
     return service
 
@@ -124,6 +127,7 @@ def create_docker_compose(config):
 
     # Create services in the specified order
     if config['rife']:
+        depends_on = {}
         rife_service = create_service(
             RifeService,
             {
@@ -132,11 +136,19 @@ def create_docker_compose(config):
                 'command': 'python inference_video.py --video /video/source/video.mp4 --output /video/result/video.mp4'
             },
             common_env,
-            volumes['rife']
+            volumes['rife'],
+            depends_on=depends_on
         )
         services.append(rife_service)
 
     if config['deoldify']:
+        depends_on = {}
+        if config['rife']:
+            depends_on = {
+                'rife_ai': {
+                    'condition': 'service_completed_successfully'
+                }
+            }
         deoldify_service = create_service(
             DeoldifyService,
             {
@@ -145,11 +157,21 @@ def create_docker_compose(config):
                 'command': f'python colorize_video.py --file_name video.mp4 --render_factor 30'
             },
             common_env,
-            volumes['deoldify']
+            volumes['deoldify'],
+            depends_on=depends_on
         )
         services.append(deoldify_service)
 
     if config['neural_style']:
+        depends_on = {}
+        if config['rife']:
+            depends_on['rife_ai'] = {
+                'condition': 'service_completed_successfully'
+            }
+        if config['deoldify']:
+            depends_on['deoldify'] = {
+                'condition': 'service_completed_successfully'
+            }
         neural_style_service = create_service(
             NeuralStyleService,
             {
@@ -158,11 +180,25 @@ def create_docker_compose(config):
                 'command': f'python inference_video.py --file_name video.mp4 --model_name {config["NEURAL_MODEL"]}'
             },
             common_env,
-            volumes['neural_style']
+            volumes['neural_style'],
+            depends_on=depends_on
         )
         services.append(neural_style_service)
 
     if config['esrgan']:
+        depends_on = {}
+        if config['rife']:
+            depends_on['rife_ai'] = {
+                'condition': 'service_completed_successfully'
+            }
+        if config['deoldify']:
+            depends_on['deoldify'] = {
+                'condition': 'service_completed_successfully'
+            }
+        if config['neural_style']:
+            depends_on['neural_style'] = {
+                'condition': 'service_completed_successfully'
+            }
         esrgan_service = create_service(
             EsrganService,
             {
@@ -171,7 +207,8 @@ def create_docker_compose(config):
                 'command': f'python inference_realesrgan_video.py -i /video/source/video.mp4 -n RealESRGAN_x4plus --outscale {config["ESRGAN_OUTSCALE"]}'
             },
             common_env,
-            volumes['esrgan']
+            volumes['esrgan'],
+            depends_on=depends_on
         )
         services.append(esrgan_service)
 
@@ -200,6 +237,8 @@ def generate_docker_compose_yml(services, output_file='docker-compose.yml'):
             'restart': service.restart,
             'deploy': service.deploy
         }
+        if service.depends_on:
+            service_dict['depends_on'] = service.depends_on
         compose_dict['services'][service.container_name] = service_dict
 
     with open(output_file, 'w') as file:
