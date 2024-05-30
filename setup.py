@@ -131,7 +131,7 @@ def create_docker_compose(config):
             {
                 'image': 'deoldify',
                 'container_name': 'deoldify',
-                'command': f'python inference_video.py --file_name video.mp4 --model_name {config["NEURAL_MODEL"]}'
+                'command': f'python colorize_video.py --file_name video.mp4 --render_factor 30'
             },
             common_env,
             volumes['deoldify']
@@ -144,7 +144,7 @@ def create_docker_compose(config):
             {
                 'image': 'video-style-transfer',
                 'container_name': 'neural_style',
-                'command': f'python inference_realesrgan_video.py -i /video/source/video.mp4 -n RealESRGAN_x4plus --outscale {config["ESRGAN_OUTSCALE"]}'
+                'command': f'python inference_video.py --file_name video.mp4 --model_name {config["NEURAL_MODEL"]}'
             },
             common_env,
             volumes['neural_style']
@@ -157,7 +157,7 @@ def create_docker_compose(config):
             {
                 'image': 'esrgan',
                 'container_name': 'esrgan',
-                'command': 'python colorize_video.py --file_name video.mp4 --render_factor 30'
+                'command': f'python inference_realesrgan_video.py -i /video/source/video.mp4 -n RealESRGAN_x4plus --outscale {config["ESRGAN_OUTSCALE"]}'
             },
             common_env,
             volumes['esrgan']
