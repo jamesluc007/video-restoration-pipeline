@@ -1,0 +1,10 @@
+# config.yml
+
+rife: true
+deoldify: true
+neural_style: true
+esrgan: true
+
+ESRGAN_OUTSCALE: 4.0
+NEURAL_MODEL: 'default_model'
+NVIDIA_VISIBLE_DEVICES: 'all'
