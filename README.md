@@ -2,6 +2,8 @@
 
 **Video Restoration Pipeline** is a video restoration tool that works with Docker Compose and multiple AI models. Fully compatible with Windows, it allows you to use your GPU (through WSL2) and is very easy to use once fully installed. As of May 2024, the pipeline includes four AI models, all of which use free and publicly available weights. The architecture is modular and scalable, allowing for the seamless addition of new AI models in the future.
 
+Here is the [Presentation Video](https://youtu.be/6meHJnRKYS0)
+
 Current Features:
 * FPS Increment
 * Colorization of B&W videos
@@ -46,6 +48,7 @@ Current Features:
 ### Input Video
 Disney Intro, 360p, B&W video.
 
+(This image is actually a video, click on it and it will direct you to YouTube)
 [![Input Video](assets/source.PNG)](https://youtu.be/Xyovy6e8X6Y?si=HUG-2-B4M7flm32e)
 
 1. Put this video in the `video/source` folder.
@@ -58,6 +61,7 @@ The entire process took 20 minutes with a Nvidia 3090 GPU for a 32 seconds long 
 ### Result Video
 Disney Intro, 2K, colorized video.
 
+(This image is actually a video, click on it and it will direct you to YouTube)
 [![Result Video](assets/result.PNG)](https://youtu.be/LZG1aHhoLVI?si=QFykECH2R7z1ziuy)
 
 ## Other Examples
